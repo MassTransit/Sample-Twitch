@@ -4,11 +4,13 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
+    using Components.BatchConsumers;
     using Components.Consumers;
     using Components.CourierActivities;
     using Components.StateMachines;
     using Components.StateMachines.OrderStateMachineActivities;
     using MassTransit;
+    using MassTransit.Courier.Contracts;
     using MassTransit.Definition;
     using MassTransit.MongoDbIntegration;
     using Microsoft.ApplicationInsights;
@@ -19,6 +21,8 @@
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using Serilog;
+    using Serilog.Events;
     using Warehouse.Contracts;
 
 
@@ -30,6 +34,13 @@
         static async Task Main(string[] args)
         {
             var isService = !(Debugger.IsAttached || args.Contains("--console"));
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
 
             var builder = new HostBuilder()
                 .ConfigureAppConfiguration((hostingContext, config) =>
@@ -46,15 +57,16 @@
                     _module.IncludeDiagnosticSourceActivities.Add("MassTransit");
 
                     TelemetryConfiguration configuration = TelemetryConfiguration.CreateDefault();
-                    configuration.InstrumentationKey = "";
+                    configuration.InstrumentationKey = "6b4c6c82-3250-4170-97d3-245ee1449278";
                     configuration.TelemetryInitializers.Add(new HttpDependenciesParsingTelemetryInitializer());
 
                     _telemetryClient = new TelemetryClient(configuration);
 
                     _module.Initialize(configuration);
 
-
                     services.AddScoped<AcceptOrderActivity>();
+
+                    services.AddScoped<RoutingSlipBatchEventConsumer>();
 
                     services.TryAddSingleton(KebabCaseEndpointNameFormatter.Instance);
                     services.AddMassTransit(cfg =>
@@ -78,8 +90,8 @@
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
+                    logging.AddSerilog(dispose: true);
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
                 });
 
             if (isService)
@@ -89,12 +101,29 @@
 
             _telemetryClient?.Flush();
             _module?.Dispose();
+
+            Log.CloseAndFlush();
         }
 
         static IBusControl ConfigureBus(IServiceProvider provider)
         {
             return Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
+                cfg.UseMessageScheduler(new Uri("queue:quartz"));
+
+                cfg.ReceiveEndpoint(KebabCaseEndpointNameFormatter.Instance.Consumer<RoutingSlipBatchEventConsumer>(), e =>
+                {
+                    e.PrefetchCount = 20;
+
+                    e.Batch<RoutingSlipCompleted>(b =>
+                    {
+                        b.MessageLimit = 10;
+                        b.TimeLimit = TimeSpan.FromSeconds(5);
+
+                        b.Consumer<RoutingSlipBatchEventConsumer, RoutingSlipCompleted>(provider);
+                    });
+                });
+
                 cfg.ConfigureEndpoints(provider);
             });
         }

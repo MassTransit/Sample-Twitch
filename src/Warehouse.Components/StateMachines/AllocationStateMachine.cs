@@ -4,12 +4,13 @@ namespace Warehouse.Components.StateMachines
     using Automatonymous;
     using Contracts;
     using MassTransit;
+    using Microsoft.Extensions.Logging;
 
 
     public class AllocationStateMachine :
         MassTransitStateMachine<AllocationState>
     {
-        public AllocationStateMachine()
+        public AllocationStateMachine(ILogger<AllocationStateMachine> logger)
         {
             Event(() => AllocationCreated, x => x.CorrelateById(m => m.Message.AllocationId));
             Event(() => ReleaseRequested, x => x.CorrelateById(m => m.Message.AllocationId));
@@ -40,17 +41,17 @@ namespace Warehouse.Components.StateMachines
 
             During(Released,
                 When(AllocationCreated)
-                    .ThenAsync(context => Console.Out.WriteLineAsync($"Allocation was already released: {context.Instance.CorrelationId}"))
+                    .Then(context => logger.LogInformation("Allocation already released: {AllocationId}", context.Instance.CorrelationId))
                     .Finalize()
             );
 
             During(Allocated,
                 When(HoldExpiration.Received)
-                    .ThenAsync(context => Console.Out.WriteLineAsync($"Allocation expired: {context.Instance.CorrelationId}"))
+                    .Then(context => logger.LogInformation("Allocation expired {AllocationId}", context.Instance.CorrelationId))
                     .Finalize(),
                 When(ReleaseRequested)
                     .Unschedule(HoldExpiration)
-                    .ThenAsync(context => Console.Out.WriteLineAsync($"Allocation release request, granted: {context.Instance.CorrelationId}"))
+                    .Then(context => logger.LogInformation("Allocation Release Granted: {AllocationId}", context.Instance.CorrelationId))
                     .Finalize()
             );
 

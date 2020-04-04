@@ -17,6 +17,8 @@
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using Serilog;
+    using Serilog.Events;
 
 
     class Program
@@ -27,6 +29,13 @@
         static async Task Main(string[] args)
         {
             var isService = !(Debugger.IsAttached || args.Contains("--console"));
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
 
             var builder = new HostBuilder()
                 .ConfigureAppConfiguration((hostingContext, config) =>
@@ -43,7 +52,7 @@
                     _module.IncludeDiagnosticSourceActivities.Add("MassTransit");
 
                     TelemetryConfiguration configuration = TelemetryConfiguration.CreateDefault();
-                    configuration.InstrumentationKey = "";
+                    configuration.InstrumentationKey = "6b4c6c82-3250-4170-97d3-245ee1449278";
                     configuration.TelemetryInitializers.Add(new HttpDependenciesParsingTelemetryInitializer());
 
                     _telemetryClient = new TelemetryClient(configuration);
@@ -68,8 +77,8 @@
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
+                    logging.AddSerilog(dispose: true);
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
                 });
 
             if (isService)
@@ -79,6 +88,8 @@
 
             _telemetryClient?.Flush();
             _module?.Dispose();
+
+            Log.CloseAndFlush();
         }
 
         static IBusControl ConfigureBus(IServiceProvider provider)

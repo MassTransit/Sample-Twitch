@@ -8,7 +8,6 @@ namespace Sample.Components.Consumers
 
 
     public class RoutingSlipEventConsumer :
-        IConsumer<RoutingSlipCompleted>,
         IConsumer<RoutingSlipFaulted>,
         IConsumer<RoutingSlipActivityCompleted>
     {
@@ -17,14 +16,6 @@ namespace Sample.Components.Consumers
         public RoutingSlipEventConsumer(ILogger<RoutingSlipEventConsumer> logger)
         {
             _logger = logger;
-        }
-
-        public Task Consume(ConsumeContext<RoutingSlipCompleted> context)
-        {
-            if (_logger.IsEnabled(LogLevel.Information))
-                _logger.Log(LogLevel.Information, "Routing Slip Completed: {TrackingNumber}", context.Message.TrackingNumber);
-
-            return Task.CompletedTask;
         }
 
         public Task Consume(ConsumeContext<RoutingSlipActivityCompleted> context)

@@ -2,12 +2,11 @@ namespace Sample.Api.Controllers
 {
     using System;
     using System.Threading.Tasks;
-    using Components.Consumers;
     using Contracts;
     using MassTransit;
-    using MassTransit.Definition;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Models;
 
 
     [ApiController]
@@ -49,14 +48,17 @@ namespace Sample.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(Guid id, string customerNumber, string paymentCardNumber)
+        public async Task<IActionResult> Post(OrderViewModel model)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var (accepted, rejected) = await _submitOrderRequestClient.GetResponse<OrderSubmissionAccepted, OrderSubmissionRejected>(new
             {
-                OrderId = id,
+                OrderId = model.Id,
                 InVar.Timestamp,
-                CustomerNumber = customerNumber,
-                PaymentCardNumber = paymentCardNumber
+                model.CustomerNumber,
+                model.PaymentCardNumber
             });
 
             if (accepted.IsCompletedSuccessfully)
@@ -64,6 +66,13 @@ namespace Sample.Api.Controllers
                 var response = await accepted;
 
                 return Accepted(response);
+            }
+
+            if (accepted.IsCompleted)
+            {
+                await accepted;
+
+                return Problem("Order was not accepted");
             }
             else
             {
