@@ -14,5 +14,7 @@ namespace Sample.Api.Models
 
         [Required]
         public string PaymentCardNumber { get; set; }
+
+        public string Notes { get; set; }
     }
 }

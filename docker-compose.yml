@@ -1,14 +1,89 @@
-version: "3"
+version: "3.6"
+
+networks:
+  twitch:
+
 services:
+  prometheus:
+    image: prom/prometheus:v2.17.1
+    networks:
+      - "twitch"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  grafana:
+    image: grafana/grafana:6.7.2
+    networks:
+      - "twitch"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/rabbitmq.yaml
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/prometheus.yaml
+      - ./grafana/dashboards:/dashboards
   rabbitmq:
-    container_name: twitch-rabbitmq
-    hostname: rabbit
-    image: rabbitmq:3-management
+    image: masstransit/rabbitmq:latest
+    networks:
+     - twitch
     ports:
      - "5672:5672"
      - "15672:15672"
+     - "15692:15692"
+    healthcheck:
+        timeout: 5s
+        interval: 5s
+        retries: 10
+        test:
+          - "CMD"
+          - "rabbitmqctl"
+          - "status" 
+  sqlserver:
+    image: masstransit/sqlserver-quartz
+    networks:
+     - twitch
+    ports:
+      - 1433:1433
+  quartz:
+    image: masstransit/quartz:latest
+    environment:
+      - ApplicationInsights__InstrumentationKey=6b4c6c82-3250-4170-97d3-245ee1449278
+      - MT_Prometheus=quartz
+      - MT_Quartz_ConnectionString=Server=tcp:sqlserver;Database=quartznet;Persist Security Info=False;User ID=sa;Password=Quartz!DockerP4ss;Encrypt=False;TrustServerCertificate=True;
+    networks:
+     - twitch
+    ports:
+     - "5002:80"
   redis:
     image: redis
-    container_name: twitch-redis
+    networks:
+     - twitch
     ports:
       - "6379:6379"
+  mongo:
+    image: "mongo"
+    networks:
+     - twitch
+    ports:
+    - '27017-27019:27017-27019'
+  warehouse:
+    image: twitch/warehouse:latest
+    environment:
+      - ApplicationInsights__InstrumentationKey=6b4c6c82-3250-4170-97d3-245ee1449278
+      - MT_Prometheus=warehouse
+      - MT_Quartz=quartz
+    networks:
+     - twitch
+    ports:
+     - "5004:80"
+  sample:
+    image: twitch/sample:latest
+    environment:
+      - ApplicationInsights__InstrumentationKey=6b4c6c82-3250-4170-97d3-245ee1449278
+      - MT_Prometheus=sample
+      - MT_Quartz=quartz
+    networks:
+     - twitch
+    ports:
+     - "5006:80"
+    

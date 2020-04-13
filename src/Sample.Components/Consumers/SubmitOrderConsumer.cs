@@ -1,5 +1,6 @@
 namespace Sample.Components.Consumers
 {
+    using System;
     using System.Threading.Tasks;
     using Contracts;
     using MassTransit;
@@ -38,12 +39,21 @@ namespace Sample.Components.Consumers
                 return;
             }
 
+            MessageData<string> notes = context.Message.Notes;
+            if (notes.HasValue)
+            {
+                string notesValue = await notes.Value;
+
+                Console.WriteLine("NOTES: {0}", notesValue);
+            }
+
             await context.Publish<OrderSubmitted>(new
             {
                 context.Message.OrderId,
                 context.Message.Timestamp,
                 context.Message.CustomerNumber,
-                context.Message.PaymentCardNumber
+                context.Message.PaymentCardNumber,
+                context.Message.Notes
             });
 
             if (context.RequestId != null)

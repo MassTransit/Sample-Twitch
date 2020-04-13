@@ -12,7 +12,7 @@ namespace Sample.Components.Consumers
     {
         public FulfillOrderConsumerDefinition()
         {
-            ConcurrentMessageLimit = 4;
+            ConcurrentMessageLimit = 20;
         }
 
         protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator,

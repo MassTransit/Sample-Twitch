@@ -10,7 +10,7 @@ namespace Warehouse.Components.StateMachines
     {
         public AllocateStateMachineDefinition()
         {
-            ConcurrentMessageLimit = 4;
+            ConcurrentMessageLimit = 10;
         }
 
         protected override void ConfigureSaga(IReceiveEndpointConfigurator endpointConfigurator, ISagaConfigurator<AllocationState> sagaConfigurator)

@@ -1,6 +1,7 @@
 namespace Sample.Contracts
 {
     using System;
+    using MassTransit;
 
 
     public interface OrderSubmitted
@@ -10,5 +11,7 @@ namespace Sample.Contracts
 
         string CustomerNumber { get; }
         string PaymentCardNumber { get; }
+
+        MessageData<string> Notes { get; }
     }
 }
