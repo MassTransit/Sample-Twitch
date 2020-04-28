@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit.Platform.Abstractions" Version="6.2.2" />
+    <PackageReference Include="MassTransit.Platform.Abstractions" Version="6.2.5" />
   </ItemGroup>
 
   <ItemGroup>

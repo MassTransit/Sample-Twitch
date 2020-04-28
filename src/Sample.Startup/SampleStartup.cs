@@ -1,8 +1,6 @@
-﻿using System;
-
-
-namespace Sample.Startup
+﻿namespace Sample.Startup
 {
+    using System;
     using Components.BatchConsumers;
     using Components.Consumers;
     using Components.CourierActivities;

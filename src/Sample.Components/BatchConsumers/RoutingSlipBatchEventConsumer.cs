@@ -2,33 +2,17 @@ namespace Sample.Components.BatchConsumers
 {
     using System.Linq;
     using System.Threading.Tasks;
-    using Consumers;
     using MassTransit;
-    using MassTransit.ConsumeConfigurators;
     using MassTransit.Courier.Contracts;
-    using MassTransit.Definition;
     using Microsoft.Extensions.Logging;
 
-
-    public class RoutingSlipBatchEventConsumerDefinition :
-        ConsumerDefinition<RoutingSlipBatchEventConsumer>
-    {
-        public RoutingSlipBatchEventConsumerDefinition()
-        {
-            ConcurrentMessageLimit = 20;
-        }
-        protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<RoutingSlipBatchEventConsumer> consumerConfigurator)
-        {
-            consumerConfigurator.Options<BatchOptions>(o => o.SetMessageLimit(10).SetTimeLimit(100));
-        }
-    }
 
     public class RoutingSlipBatchEventConsumer :
         IConsumer<Batch<RoutingSlipCompleted>>
     {
-        readonly ILogger<RoutingSlipEventConsumer> _logger;
+        readonly ILogger<RoutingSlipBatchEventConsumer> _logger;
 
-        public RoutingSlipBatchEventConsumer(ILogger<RoutingSlipEventConsumer> logger)
+        public RoutingSlipBatchEventConsumer(ILogger<RoutingSlipBatchEventConsumer> logger)
         {
             _logger = logger;
         }

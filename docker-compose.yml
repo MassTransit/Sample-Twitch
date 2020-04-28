@@ -47,9 +47,10 @@ services:
   quartz:
     image: masstransit/quartz:latest
     environment:
-      - ApplicationInsights__InstrumentationKey=6b4c6c82-3250-4170-97d3-245ee1449278
-      - MT_Prometheus=quartz
-      - MT_Quartz_ConnectionString=Server=tcp:sqlserver;Database=quartznet;Persist Security Info=False;User ID=sa;Password=Quartz!DockerP4ss;Encrypt=False;TrustServerCertificate=True;
+      ApplicationInsights__InstrumentationKey: '6b4c6c82-3250-4170-97d3-245ee1449278'
+      MT_Prometheus: 'quartz'
+      MT_Scheduler: 'quartz'
+      MT_Quartz__ConnectionString: 'Server=tcp:sqlserver;Database=quartznet;Persist Security Info=False;User ID=sa;Password=Quartz!DockerP4ss;Encrypt=False;TrustServerCertificate=True;'
     networks:
      - twitch
     ports:
@@ -68,20 +69,26 @@ services:
     - '27017-27019:27017-27019'
   warehouse:
     image: twitch/warehouse:latest
+    build:
+      context: ./src
+      dockerfile: Dockerfile-warehouse
     environment:
       - ApplicationInsights__InstrumentationKey=6b4c6c82-3250-4170-97d3-245ee1449278
       - MT_Prometheus=warehouse
-      - MT_Quartz=quartz
+      - MT_Scheduler=quartz
     networks:
      - twitch
     ports:
      - "5004:80"
   sample:
     image: twitch/sample:latest
+    build:
+      context: ./src
+      dockerfile: Dockerfile-sample
     environment:
       - ApplicationInsights__InstrumentationKey=6b4c6c82-3250-4170-97d3-245ee1449278
       - MT_Prometheus=sample
-      - MT_Quartz=quartz
+      - MT_Scheduler=quartz
     networks:
      - twitch
     ports:

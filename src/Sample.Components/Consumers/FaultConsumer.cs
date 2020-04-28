@@ -8,8 +8,9 @@ namespace Sample.Components.Consumers
     public class FaultConsumer :
         IConsumer<Fault<FulfillOrder>>
     {
-        public async Task Consume(ConsumeContext<Fault<FulfillOrder>> context)
+        public Task Consume(ConsumeContext<Fault<FulfillOrder>> context)
         {
+            return Task.CompletedTask;
         }
     }
 }
