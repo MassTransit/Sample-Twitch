@@ -92,13 +92,13 @@
             Log.CloseAndFlush();
         }
 
-        static IBusControl ConfigureBus(IServiceProvider provider)
+        static IBusControl ConfigureBus(IRegistrationContext<IServiceProvider> context)
         {
             return Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
                 cfg.UseMessageScheduler(new Uri("queue:quartz"));
 
-                cfg.ConfigureEndpoints(provider);
+                cfg.ConfigureEndpoints(context);
             });
         }
     }

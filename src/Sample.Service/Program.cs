@@ -106,7 +106,7 @@
             Log.CloseAndFlush();
         }
 
-        static IBusControl ConfigureBus(IServiceProvider provider)
+        static IBusControl ConfigureBus(IRegistrationContext<IServiceProvider> context)
         {
             return Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
@@ -122,11 +122,11 @@
                         b.MessageLimit = 10;
                         b.TimeLimit = TimeSpan.FromSeconds(5);
 
-                        b.Consumer<RoutingSlipBatchEventConsumer, RoutingSlipCompleted>(provider);
+                        b.Consumer<RoutingSlipBatchEventConsumer, RoutingSlipCompleted>(context.Container);
                     });
                 });
 
-                cfg.ConfigureEndpoints(provider);
+                cfg.ConfigureEndpoints(context);
             });
         }
     }

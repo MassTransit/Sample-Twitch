@@ -24,7 +24,8 @@
                 });
         }
 
-        public void ConfigureBus<TEndpointConfigurator>(IBusFactoryConfigurator<TEndpointConfigurator> configurator, IServiceProvider provider)
+        public void ConfigureBus<TEndpointConfigurator>(IBusFactoryConfigurator<TEndpointConfigurator> configurator,
+            IRegistrationContext<IServiceProvider> context)
             where TEndpointConfigurator : IReceiveEndpointConfigurator
         {
         }
