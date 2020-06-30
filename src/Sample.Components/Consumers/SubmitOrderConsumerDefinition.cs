@@ -1,5 +1,7 @@
 namespace Sample.Components.Consumers
 {
+    using System;
+    using Contracts;
     using GreenPipes;
     using MassTransit;
     using MassTransit.ConsumeConfigurators;
@@ -9,8 +11,11 @@ namespace Sample.Components.Consumers
     public class SubmitOrderConsumerDefinition :
         ConsumerDefinition<SubmitOrderConsumer>
     {
-        public SubmitOrderConsumerDefinition()
+        readonly IServiceProvider _serviceProvider;
+
+        public SubmitOrderConsumerDefinition(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             ConcurrentMessageLimit = 20;
         }
 
@@ -18,6 +23,9 @@ namespace Sample.Components.Consumers
             IConsumerConfigurator<SubmitOrderConsumer> consumerConfigurator)
         {
             endpointConfigurator.UseMessageRetry(r => r.Interval(3, 1000));
+            endpointConfigurator.UseServiceScope(_serviceProvider);
+
+            consumerConfigurator.Message<SubmitOrder>(m => m.UseFilter(new ContainerScopedFilter()));
         }
     }
 }
