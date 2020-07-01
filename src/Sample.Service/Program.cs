@@ -12,8 +12,8 @@
     using MassTransit;
     using MassTransit.Courier.Contracts;
     using MassTransit.Definition;
-    using MassTransit.MongoDbIntegration;
     using MassTransit.MongoDbIntegration.MessageData;
+    using MassTransit.RabbitMqTransport;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.DependencyCollector;
     using Microsoft.ApplicationInsights.Extensibility;
@@ -82,7 +82,7 @@
                                 r.DatabaseName = "orders";
                             });
 
-                        cfg.AddBus(ConfigureBus);
+                        cfg.UsingRabbitMq(ConfigureBus);
 
                         cfg.AddRequestClient<AllocateInventory>();
                     });
@@ -106,28 +106,25 @@
             Log.CloseAndFlush();
         }
 
-        static IBusControl ConfigureBus(IRegistrationContext<IServiceProvider> context)
+        static void ConfigureBus(IBusRegistrationContext context, IRabbitMqBusFactoryConfigurator configurator)
         {
-            return Bus.Factory.CreateUsingRabbitMq(cfg =>
+            configurator.UseMessageData(new MongoDbMessageDataRepository("mongodb://127.0.0.1", "attachments"));
+            configurator.UseMessageScheduler(new Uri("queue:quartz"));
+
+            configurator.ReceiveEndpoint(KebabCaseEndpointNameFormatter.Instance.Consumer<RoutingSlipBatchEventConsumer>(), e =>
             {
-                cfg.UseMessageData(new MongoDbMessageDataRepository("mongodb://127.0.0.1", "attachments"));
-                cfg.UseMessageScheduler(new Uri("queue:quartz"));
+                e.PrefetchCount = 20;
 
-                cfg.ReceiveEndpoint(KebabCaseEndpointNameFormatter.Instance.Consumer<RoutingSlipBatchEventConsumer>(), e =>
+                e.Batch<RoutingSlipCompleted>(b =>
                 {
-                    e.PrefetchCount = 20;
+                    b.MessageLimit = 10;
+                    b.TimeLimit = TimeSpan.FromSeconds(5);
 
-                    e.Batch<RoutingSlipCompleted>(b =>
-                    {
-                        b.MessageLimit = 10;
-                        b.TimeLimit = TimeSpan.FromSeconds(5);
-
-                        b.Consumer<RoutingSlipBatchEventConsumer, RoutingSlipCompleted>(context.Container);
-                    });
+                    b.Consumer<RoutingSlipBatchEventConsumer, RoutingSlipCompleted>(context);
                 });
-
-                cfg.ConfigureEndpoints(context);
             });
+
+            configurator.ConfigureEndpoints(context);
         }
     }
 }

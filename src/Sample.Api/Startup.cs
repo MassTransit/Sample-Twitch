@@ -5,7 +5,6 @@ namespace Sample.Api
     using Contracts;
     using MassTransit;
     using MassTransit.Definition;
-    using MassTransit.MessageData;
     using MassTransit.MongoDbIntegration.MessageData;
     using Microsoft.ApplicationInsights.DependencyCollector;
     using Microsoft.AspNetCore.Builder;
@@ -40,26 +39,20 @@ namespace Sample.Api
             });
 
             services.TryAddSingleton(KebabCaseEndpointNameFormatter.Instance);
-            services.AddMassTransit(cfg =>
+            services.AddMassTransit(mt =>
             {
-                cfg.AddBus(provider =>
+                mt.UsingRabbitMq((context, cfg) =>
                 {
-                    return Bus.Factory.CreateUsingRabbitMq(x =>
-                    {
-                        MessageDataDefaults.ExtraTimeToLive = TimeSpan.FromDays(1);
-                        MessageDataDefaults.Threshold = 2000;
-                        MessageDataDefaults.AlwaysWriteToRepository = false;
+                    MessageDataDefaults.ExtraTimeToLive = TimeSpan.FromDays(1);
+                    MessageDataDefaults.Threshold = 2000;
+                    MessageDataDefaults.AlwaysWriteToRepository = false;
 
-                        x.UseMessageData(new MongoDbMessageDataRepository("mongodb://127.0.0.1", "attachments"));
-
-                        x.UseHealthCheck(provider);
-                    });
+                    cfg.UseMessageData(new MongoDbMessageDataRepository("mongodb://127.0.0.1", "attachments"));
                 });
 
-                cfg.AddRequestClient<SubmitOrder>(
-                    new Uri($"queue:{KebabCaseEndpointNameFormatter.Instance.Consumer<SubmitOrderConsumer>()}"));
+                mt.AddRequestClient<SubmitOrder>(new Uri($"queue:{KebabCaseEndpointNameFormatter.Instance.Consumer<SubmitOrderConsumer>()}"));
 
-                cfg.AddRequestClient<CheckOrder>();
+                mt.AddRequestClient<CheckOrder>();
             });
 
             services.Configure<HealthCheckPublisherOptions>(options =>

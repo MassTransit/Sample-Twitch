@@ -1,6 +1,5 @@
 ﻿namespace Sample.Startup
 {
-    using System;
     using Components.BatchConsumers;
     using Components.Consumers;
     using Components.CourierActivities;
@@ -8,7 +7,6 @@
     using Components.StateMachines.OrderStateMachineActivities;
     using MassTransit;
     using MassTransit.ExtensionsDependencyInjectionIntegration;
-    using MassTransit.MongoDbIntegration;
     using MassTransit.MongoDbIntegration.MessageData;
     using MassTransit.Platform.Abstractions;
     using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +16,7 @@
     public class SampleStartup :
         IPlatformStartup
     {
-        public void ConfigureMassTransit(IServiceCollectionConfigurator configurator, IServiceCollection services)
+        public void ConfigureMassTransit(IServiceCollectionBusConfigurator configurator, IServiceCollection services)
         {
             services.AddScoped<AcceptOrderActivity>();
 
@@ -37,7 +35,7 @@
         }
 
         public void ConfigureBus<TEndpointConfigurator>(IBusFactoryConfigurator<TEndpointConfigurator> configurator,
-            IRegistrationContext<IServiceProvider> context)
+            IBusRegistrationContext context)
             where TEndpointConfigurator : IReceiveEndpointConfigurator
         {
             configurator.UseMessageData(new MongoDbMessageDataRepository("mongodb://mongo", "attachments"));

@@ -11,10 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="6.3.2" />
-    <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="6.3.2" />
-    <PackageReference Include="MassTransit.MongoDb" Version="6.3.2" />
-    <PackageReference Include="MassTransit.Redis" Version="6.3.2" />
+    <PackageReference Include="MassTransit" Version="7.0.0" />
+    <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="MassTransit.MongoDb" Version="7.0.0" />
+    <PackageReference Include="MassTransit.Redis" Version="7.0.0" />
   </ItemGroup>
 
 </Project>

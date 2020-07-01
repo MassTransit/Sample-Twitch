@@ -9,6 +9,7 @@
     using MassTransit;
     using MassTransit.Definition;
     using MassTransit.MongoDbIntegration;
+    using MassTransit.RabbitMqTransport;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.DependencyCollector;
     using Microsoft.ApplicationInsights.Extensibility;
@@ -70,7 +71,7 @@
                                 r.DatabaseName = "allocations";
                             });
 
-                        cfg.AddBus(ConfigureBus);
+                        cfg.UsingRabbitMq(ConfigureBus);
                     });
 
                     services.AddHostedService<MassTransitConsoleHostedService>();
@@ -92,14 +93,11 @@
             Log.CloseAndFlush();
         }
 
-        static IBusControl ConfigureBus(IRegistrationContext<IServiceProvider> context)
+        static void ConfigureBus(IBusRegistrationContext busRegistrationContext, IRabbitMqBusFactoryConfigurator configurator)
         {
-            return Bus.Factory.CreateUsingRabbitMq(cfg =>
-            {
-                cfg.UseMessageScheduler(new Uri("queue:quartz"));
+            configurator.UseMessageScheduler(new Uri("queue:quartz"));
 
-                cfg.ConfigureEndpoints(context);
-            });
+            configurator.ConfigureEndpoints(busRegistrationContext);
         }
     }
 }
