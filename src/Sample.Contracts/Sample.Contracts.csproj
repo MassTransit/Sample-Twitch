@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="7.0.0" />
+    <PackageReference Include="MassTransit" Version="7.0.4" />
   </ItemGroup>
 
 </Project>

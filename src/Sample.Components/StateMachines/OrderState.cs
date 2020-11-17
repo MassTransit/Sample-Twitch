@@ -2,19 +2,14 @@ namespace Sample.Components.StateMachines
 {
     using System;
     using Automatonymous;
-    using MassTransit.MongoDbIntegration.Saga;
+    using MassTransit.Saga;
     using MongoDB.Bson.Serialization.Attributes;
 
 
     public class OrderState :
         SagaStateMachineInstance,
-        IVersionedSaga
+        ISagaVersion
     {
-        [BsonId]
-        public Guid CorrelationId { get; set; }
-
-        public int Version { get; set; }
-
         public string CurrentState { get; set; }
 
         public string CustomerNumber { get; set; }
@@ -25,5 +20,9 @@ namespace Sample.Components.StateMachines
         public DateTime? SubmitDate { get; set; }
         public DateTime? Updated { get; set; }
 
+        public int Version { get; set; }
+
+        [BsonId]
+        public Guid CorrelationId { get; set; }
     }
 }

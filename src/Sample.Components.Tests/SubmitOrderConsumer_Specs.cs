@@ -37,7 +37,7 @@
 
                 Assert.That(consumer.Consumed.Select<SubmitOrder>().Any(), Is.True);
 
-                Assert.That(harness.Sent.Select<OrderSubmissionAccepted>().Any(), Is.True);
+                Assert.That(await harness.Sent.Any<OrderSubmissionAccepted>(), Is.True);
             }
             finally
             {
@@ -152,7 +152,7 @@
                     CustomerNumber = "12345"
                 });
 
-                Assert.That(harness.Published.Select<OrderSubmitted>().Any(), Is.True);
+                Assert.That(await harness.Published.Any<OrderSubmitted>(), Is.True);
             }
             finally
             {

@@ -40,7 +40,7 @@ namespace Sample.Components.Consumers
             }
 
             MessageData<string> notes = context.Message.Notes;
-            if (notes.HasValue)
+            if (notes?.HasValue ?? false)
             {
                 string notesValue = await notes.Value;
 
