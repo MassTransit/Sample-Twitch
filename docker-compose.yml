@@ -39,7 +39,7 @@ services:
           - "rabbitmqctl"
           - "status" 
   sqlserver:
-    image: masstransit/sqlserver-quartz
+    image: masstransit/sqlserver-quartz:latest
     networks:
      - twitch
     ports:
