@@ -75,7 +75,7 @@
                 var json = JsonConvert.SerializeObject(order);
                 var data = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var responseMessage = await _client.PostAsync($"https://localhost:5001/Order", data);
+                var responseMessage = await _client.PostAsync($"http://localhost:5000/Order", data);
 
                 responseMessage.EnsureSuccessStatusCode();
 

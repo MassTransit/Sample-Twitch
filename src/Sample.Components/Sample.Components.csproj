@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,10 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="7.1.3" />
-    <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.1.3" />
-    <PackageReference Include="MassTransit.MongoDb" Version="7.1.3" />
-    <PackageReference Include="MassTransit.Redis" Version="7.1.3" />
+    <PackageReference Include="MassTransit" Version="7.1.5" />
+    <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.1.5" />
+    <PackageReference Include="MassTransit.MongoDb" Version="7.1.5" />
+    <PackageReference Include="MassTransit.Redis" Version="7.1.5" />
   </ItemGroup>
 
 </Project>

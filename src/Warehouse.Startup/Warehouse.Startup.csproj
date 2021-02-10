@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit.Platform.Abstractions" Version="7.1.3" />
+    <PackageReference Include="MassTransit.Platform.Abstractions" Version="7.1.5" />
   </ItemGroup>
 
   <ItemGroup>
