@@ -9,9 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="7.1.5" />
-    <PackageReference Include="MassTransit.Analyzers" Version="7.1.5" />
-    <PackageReference Include="MassTransit.MongoDb" Version="7.1.5" />
+    <PackageReference Include="MassTransit" Version="7.1.6" />
+    <PackageReference Include="MassTransit.Analyzers" Version="7.1.6" />
+    <PackageReference Include="MassTransit.MongoDb" Version="7.1.6" />
   </ItemGroup>
 
 </Project>
