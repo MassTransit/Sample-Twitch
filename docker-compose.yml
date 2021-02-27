@@ -93,4 +93,17 @@ services:
      - twitch
     ports:
      - "5006:80"
+  api:
+    image: twitch/api:latest
+    build:
+      context: ./src
+      dockerfile: Dockerfile-api
+    environment:
+      - ApplicationInsights__InstrumentationKey=6b4c6c82-3250-4170-97d3-245ee1449278
+      - MT_Prometheus=sample
+      - MT_Scheduler=quartz
+    networks:
+     - twitch
+    ports:
+     - "5000:80"
     

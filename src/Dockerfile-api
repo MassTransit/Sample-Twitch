@@ -4,12 +4,13 @@ WORKDIR /src
 COPY ./Sample.Contracts/*.csproj ./Sample.Contracts/
 COPY ./Warehouse.Contracts/*.csproj ./Warehouse.Contracts/
 COPY ./Sample.Components/*.csproj ./Sample.Components/
-COPY ./Sample.Startup/*.csproj ./Sample.Startup/
-RUN dotnet restore -r linux-musl-x64 ./Sample.Startup/Sample.Startup.csproj 
+COPY ./Sample.Api/*.csproj ./Sample.Api/
+RUN dotnet restore ./Sample.Api/Sample.Api.csproj 
 
 COPY . .
-RUN dotnet publish -c Release -o /app -r linux-musl-x64 --no-restore ./Sample.Startup/Sample.Startup.csproj 
+RUN dotnet publish -c Release -o /app --no-restore ./Sample.Api/Sample.Api.csproj 
 
-FROM masstransit/platform:7.1.6
+FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS publish
 WORKDIR /app
 COPY --from=build /app ./
+ENTRYPOINT ["dotnet", "Sample.Api.dll"]

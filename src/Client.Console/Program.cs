@@ -86,7 +86,7 @@
                     await Task.Delay(2000);
                     await Task.Delay(_random.Next(6000));
 
-                    var orderAddress = $"https://localhost:5001/Order?id={order.Id:D}";
+                    var orderAddress = $"http://localhost:5000/Order?id={order.Id:D}";
 
                     var patchResponse = await _client.PatchAsync(orderAddress, data);
 

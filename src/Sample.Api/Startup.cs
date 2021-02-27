@@ -19,10 +19,15 @@ namespace Sample.Api
 
     public class Startup
     {
+        static bool? _isRunningInContainer;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
+
+        static bool IsRunningInContainer =>
+            _isRunningInContainer ??= bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), out var inContainer) && inContainer;
 
         public IConfiguration Configuration { get; }
 
@@ -43,11 +48,13 @@ namespace Sample.Api
             {
                 mt.UsingRabbitMq((context, cfg) =>
                 {
+                    cfg.Host(IsRunningInContainer ? "rabbitmq" : "localhost");
+
                     MessageDataDefaults.ExtraTimeToLive = TimeSpan.FromDays(1);
                     MessageDataDefaults.Threshold = 2000;
                     MessageDataDefaults.AlwaysWriteToRepository = false;
 
-                    cfg.UseMessageData(new MongoDbMessageDataRepository("mongodb://127.0.0.1", "attachments"));
+                    cfg.UseMessageData(new MongoDbMessageDataRepository(IsRunningInContainer ? "mongodb://mongo" : "mongodb://127.0.0.1", "attachments"));
                 });
 
                 mt.AddRequestClient<SubmitOrder>(new Uri($"queue:{KebabCaseEndpointNameFormatter.Instance.Consumer<SubmitOrderConsumer>()}"));
@@ -58,7 +65,7 @@ namespace Sample.Api
             services.Configure<HealthCheckPublisherOptions>(options =>
             {
                 options.Delay = TimeSpan.FromSeconds(2);
-                options.Predicate = (check) => check.Tags.Contains("ready");
+                options.Predicate = check => check.Tags.Contains("ready");
             });
 
             services.AddMassTransitHostedService();
@@ -88,15 +95,15 @@ namespace Sample.Api
                 endpoints.MapControllers();
 
                 // The readiness check uses all registered checks with the 'ready' tag.
-                endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions()
+                endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions
                 {
-                    Predicate = (check) => check.Tags.Contains("ready"),
+                    Predicate = check => check.Tags.Contains("ready"),
                 });
 
-                endpoints.MapHealthChecks("/health/live", new HealthCheckOptions()
+                endpoints.MapHealthChecks("/health/live", new HealthCheckOptions
                 {
                     // Exclude all checks and return a 200-Ok.
-                    Predicate = (_) => false
+                    Predicate = _ => false
                 });
             });
         }
