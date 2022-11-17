@@ -63,21 +63,18 @@ namespace Sample.Components.StateMachines
                     .TransitionTo(Completed));
 
             DuringAny(
-                When(OrderStatusRequested)
-                    .RespondAsync(x => x.Init<OrderStatus>(new
-                    {
-                        OrderId = x.Instance.CorrelationId,
-                        State = x.Instance.CurrentState
-                    }))
-            );
-
-            DuringAny(
                 When(OrderSubmitted)
                     .Then(context =>
                     {
                         context.Instance.SubmitDate ??= context.Data.Timestamp;
                         context.Instance.CustomerNumber ??= context.Data.CustomerNumber;
-                    })
+                    }),
+                When(OrderStatusRequested)
+                    .RespondAsync(x => x.Init<OrderStatus>(new
+                    {
+                        OrderId = x.Instance.CorrelationId,
+                        State = x.Instance.CurrentState
+                     }))
             );
         }
 
